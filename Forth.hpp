@@ -11,6 +11,12 @@ using namespace std;
 
 
 
+#define SWITCH_AST_TYPE_FORMAT(TYPE) \
+	case AST_TYPE::##TYPE : { \
+		cout << "AST_NODE<AST_TYPE::" << #TYPE << ", " << get<1>(a) << ">\n"; \
+		break; \
+	} \
+
 
 
 // Helper funcs
@@ -103,40 +109,20 @@ public:
 	void dump_AST(AST ast) {
 		for (AST_NODE a : ast) {
 			switch (get<0>(a)) {
-			case AST_TYPE::LITERAL_NUMBER: {
+
+			/*case AST_TYPE::LITERAL_NUMBER: {
 				cout << "AST_NODE<AST_TYPE::LITERAL_NUMBER," << get<1>(a) << ">\n";
 				break;
-			}
-			case AST_TYPE::LITERAL_STRING: {
-				cout << "AST_NODE<AST_TYPE::LITERAL_STRING," << get<1>(a) << ">\n";
-				break;
-			}
-			case AST_TYPE::OP_ADD: {
-				cout << "AST_NODE<AST_TYPE::OP_ADD," << get<1>(a) << ">\n";
-				break;
-			}
-			case AST_TYPE::OP_SUB: {
-				cout << "AST_NODE<AST_TYPE::OP_SUB," << get<1>(a) << ">\n";
-				break;
-			}
-			case AST_TYPE::OP_MUL: {
-				cout << "AST_NODE<AST_TYPE::OP_MUL," << get<1>(a) << ">\n";
-				break;
-			}
-			case AST_TYPE::OP_POW: {
-				cout << "AST_NODE<AST_TYPE::OP_POW," << get<1>(a) << ">\n";
-				break;
-			}
-
-
-			case AST_TYPE::POP_STACK: {
-				cout << "AST_NODE<AST_TYPE::POP_STACK," << ">\n";
-				break;
-			}
-			case AST_TYPE::WHITESPACE: {
-				cout << "AST_NODE<AST_TYPE::POP_STACK, " << ">\n";
-				break;
-			}
+			}*/
+			SWITCH_AST_TYPE_FORMAT(LITERAL_NUMBER)
+			SWITCH_AST_TYPE_FORMAT(LITERAL_STRING)
+			SWITCH_AST_TYPE_FORMAT(OP_ADD)
+			SWITCH_AST_TYPE_FORMAT(OP_SUB)
+			SWITCH_AST_TYPE_FORMAT(OP_MUL)
+			SWITCH_AST_TYPE_FORMAT(OP_POW)
+			SWITCH_AST_TYPE_FORMAT(POP_STACK)
+			SWITCH_AST_TYPE_FORMAT(WHITESPACE)
+			
 			}
 		}
 	}
@@ -222,9 +208,7 @@ public:
 
 
 
-			if (ret.size() == old_ret_len) {
-				cout << "possible parsing error\n";
-			}
+			
 
 
 

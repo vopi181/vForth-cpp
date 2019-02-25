@@ -44,9 +44,29 @@ int ascii_num_to_val(char c) {
 }
 
 
+// Error Types
+enum ERRORS {
+	MISSING_STACK_OPERANDS,
+};
 
+// Display Errors
+// @TODO add token or line number or smth to errors
+void disp_error(ERRORS e) {
+	switch (e)
+	{
+	case MISSING_STACK_OPERANDS:
+		cout << "Interp. Error: MISSING_STACK_OPERANDS\n";
+		break;
+	default:
+		cout << "Interp. Error: UNKNOWN_ERROR";
+		break;
+	}
+}
+
+// Difference Literal AST node types
 enum AST_TYPE {
 	LITERAL_NUMBER,
+	POP_STACK,
 	OP_ADD,
 	WHITESPACE,
 };
@@ -60,11 +80,24 @@ vector<AST_TYPE> op_stack;
 // A simple util function to dump the AST
 void dump_AST(AST ast) {
 	for (AST_NODE a : ast) {
-		if (get<0>(a) == AST_TYPE::LITERAL_NUMBER) {
+		switch (get<0>(a)) {
+		case AST_TYPE::LITERAL_NUMBER: {
 			cout << "AST_NODE<AST_TYPE::LITERAL_NUMBER," << get<1>(a) << ">\n";
+			break;
 		}
-		else if (get<0>(a) == AST_TYPE::OP_ADD) {
+		case AST_TYPE::OP_ADD: {
 			cout << "AST_NODE<AST_TYPE::OP_ADD," << get<1>(a) << ">\n";
+			break;
+		}
+
+		case AST_TYPE::POP_STACK: {
+			cout << "AST_NODE<AST_TYPE::POP_STACK," << ">\n";
+			break;
+		}
+		case AST_TYPE::WHITESPACE: {
+			cout << "AST_NODE<AST_TYPE::POP_STACK, " << ">\n";
+			break;
+		}
 		}
 	}
 }
@@ -88,17 +121,20 @@ AST lex(const string& inp) {
 	// Split input string into tokens
 	auto tokens = split(inp, " ");
 
-	regex d("\d+");
+	regex d("\\d+");
 	for (int i = 0; i < tokens.size(); i++) {
 		smatch m;
 		const string s = tokens.at(i);
-		
+
 
 		// Single Char?
-		if (s.length() <= 1) {
+		if (s.length() == 1) {
 			switch (s.at(0)) {
 			case '+':
 				ret.push_back(make_tuple(AST_TYPE::OP_ADD, NULL));
+				break;
+			case  '.':
+				ret.push_back(make_tuple(AST_TYPE::POP_STACK, NULL));
 			}
 		}
 
@@ -111,9 +147,11 @@ AST lex(const string& inp) {
 		}
 
 
+
+
+
+
 	}
-
-
 	return ret;
 
 }
@@ -127,17 +165,29 @@ void interp_AST(AST ast) {
 		switch (get<0>(curr)) {
 
 		case AST_TYPE::LITERAL_NUMBER:
-			data_stack.push_back(ascii_num_to_val(get<1>(curr)));
+			data_stack.push_back(get<1>(curr));
 			break;
 		case AST_TYPE::OP_ADD:
 			if (data_stack.size() >= 2) {
 				cout << (data_stack.back() + data_stack.back());
+				data_stack.pop_back();
+				data_stack.pop_back();
 			}
 			else {
-				cout << "Interp. Error: "
+				disp_error(ERRORS::MISSING_STACK_OPERANDS);
 			}
 			break;
 		case AST_TYPE::WHITESPACE:
+			break;
+
+		case AST_TYPE::POP_STACK:
+			if (data_stack.size() >= 1) {
+				cout << data_stack.back();
+				data_stack.pop_back();
+			}
+			else {
+				disp_error(ERRORS::MISSING_STACK_OPERANDS);
+			}
 			break;
 
 		}

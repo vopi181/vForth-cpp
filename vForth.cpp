@@ -68,8 +68,13 @@ enum AST_TYPE {
 	LITERAL_NUMBER,
 	POP_STACK,
 	OP_ADD,
+	OP_SUB,
+	OP_MUL,
+	OP_POW,
 	WHITESPACE,
 };
+
+
 
 typedef tuple<AST_TYPE, char> AST_NODE;
 typedef vector<AST_NODE> AST;
@@ -89,6 +94,18 @@ void dump_AST(AST ast) {
 			cout << "AST_NODE<AST_TYPE::OP_ADD," << get<1>(a) << ">\n";
 			break;
 		}
+		case AST_TYPE::OP_SUB: {
+			cout << "AST_NODE<AST_TYPE::OP_SUB," << get<1>(a) << ">\n";
+			break;
+		}
+		case AST_TYPE::OP_MUL: {
+			cout << "AST_NODE<AST_TYPE::OP_MUL," << get<1>(a) << ">\n";
+			break;
+		}
+		case AST_TYPE::OP_POW: {
+			cout << "AST_NODE<AST_TYPE::OP_POW," << get<1>(a) << ">\n";
+			break;
+		}
 
 		case AST_TYPE::POP_STACK: {
 			cout << "AST_NODE<AST_TYPE::POP_STACK," << ">\n";
@@ -104,9 +121,12 @@ void dump_AST(AST ast) {
 
 //A simple util function to dump the stack
 void dump_stack() {
-	for (int i = 0; i < data_stack.size(); i++) {
+	cout << endl;
+	cout << "=========\n";
+	for (int i = data_stack.size()-1; i >= 0; i--) {
 		cout << i << ": " << data_stack.at(i) << ", ";
 	}
+	cout << "=========\n";
 }
 
 
@@ -130,11 +150,22 @@ AST lex(const string& inp) {
 		// Single Char?
 		if (s.length() == 1) {
 			switch (s.at(0)) {
-			case '+':
+			case '+': {
 				ret.push_back(make_tuple(AST_TYPE::OP_ADD, NULL));
 				break;
-			case  '.':
+			}
+			case  '.': {
 				ret.push_back(make_tuple(AST_TYPE::POP_STACK, NULL));
+				break;
+			}
+			case '-': {
+				ret.push_back(make_tuple(AST_TYPE::OP_SUB, NULL));
+				break;
+			}
+			case '*': {
+				ret.push_back(make_tuple(AST_TYPE::OP_MUL, NULL));
+				break;
+			}
 			}
 		}
 
@@ -145,6 +176,26 @@ AST lex(const string& inp) {
 		if (m.length() > 0) {
 			ret.push_back(make_tuple(AST_TYPE::LITERAL_NUMBER, std::atoi(m[0].str().c_str())));
 		}
+
+		// Built ins
+		// [#] = # in stack, where 0 = bottom
+
+		// pow: [0] raise to [1]
+		if (s == "pow") {
+			ret.push_back(make_tuple(AST_TYPE::OP_POW, NULL));
+
+		}
+		// Exit
+		else if (s == "exit") {
+			cout << "Quiting...\n";
+			exit(0);
+		}
+		// Dump Stack
+		else if (s == "ds") {
+			dump_stack();
+		}
+
+	
 
 
 
@@ -164,10 +215,10 @@ void interp_AST(AST ast) {
 
 		switch (get<0>(curr)) {
 
-		case AST_TYPE::LITERAL_NUMBER:
+		case AST_TYPE::LITERAL_NUMBER: {
 			data_stack.push_back(get<1>(curr));
-			break;
-		case AST_TYPE::OP_ADD:
+			break; }
+		case AST_TYPE::OP_ADD: {
 			if (data_stack.size() >= 2) {
 				cout << (data_stack.back() + data_stack.back());
 				data_stack.pop_back();
@@ -176,11 +227,10 @@ void interp_AST(AST ast) {
 			else {
 				disp_error(ERRORS::MISSING_STACK_OPERANDS);
 			}
-			break;
+			break; }
 		case AST_TYPE::WHITESPACE:
 			break;
-
-		case AST_TYPE::POP_STACK:
+		case AST_TYPE::POP_STACK: {
 			if (data_stack.size() >= 1) {
 				cout << data_stack.back();
 				data_stack.pop_back();
@@ -188,8 +238,40 @@ void interp_AST(AST ast) {
 			else {
 				disp_error(ERRORS::MISSING_STACK_OPERANDS);
 			}
+			break; }
+		case AST_TYPE::OP_SUB: {
+			if (data_stack.size() >= 2) {
+				cout << (data_stack.back() - data_stack.back());
+				data_stack.pop_back();
+				data_stack.pop_back();
+			}
+			else {
+				disp_error(ERRORS::MISSING_STACK_OPERANDS);
+			}
 			break;
-
+		}
+		case AST_TYPE::OP_MUL: {
+			if (data_stack.size() >= 2) {
+				cout << (data_stack.back() * data_stack.back());
+				data_stack.pop_back();
+				data_stack.pop_back();
+			}
+			else {
+				disp_error(ERRORS::MISSING_STACK_OPERANDS);
+			}
+			break;
+		}
+		case AST_TYPE::OP_POW: {
+			if (data_stack.size() >= 2) {
+				cout << (std::pow(data_stack.back(),data_stack.back()));
+				data_stack.pop_back();
+				data_stack.pop_back();
+			}
+			else {
+				disp_error(ERRORS::MISSING_STACK_OPERANDS);
+			}
+			break;
+		}
 		}
 	}
 }
@@ -202,9 +284,6 @@ void interp(const string& inp) {
 
 int main()
 {
-	dump_AST(lex("2 2 +"));
-	interp("2 2 +");
-	cin.get();
 	if (true) {
 		while (true) {
 			cout << "> ";

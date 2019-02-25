@@ -1,7 +1,7 @@
 // CalcInterp.cpp : Defines the entry point for the console application.
 //
 
-#include "pch.h"
+
 #include <iostream>
 #include <tuple>
 #include <vector>

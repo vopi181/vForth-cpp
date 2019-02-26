@@ -11,11 +11,15 @@ using namespace std;
 
 
 
+
+
+
 #define SWITCH_AST_TYPE_FORMAT(TYPE) \
 	case AST_TYPE::##TYPE : { \
 		cout << "AST_NODE<AST_TYPE::" << #TYPE << ", " << get<1>(a) << ">\n"; \
 		break; \
-	} \
+	} 
+
 
 
 
@@ -85,6 +89,8 @@ enum AST_TYPE {
 	OP_POW,
 	WHITESPACE,
 	LITERAL_STRING,
+	OP_DUP,
+	OP_SWAP,
 };
 
 typedef tuple<AST_TYPE, string> AST_NODE;
@@ -99,7 +105,7 @@ class Forth {
 public:
 
 	Forth() {
-
+		
 	}
 	~Forth() {
 
@@ -110,19 +116,17 @@ public:
 		for (AST_NODE a : ast) {
 			switch (get<0>(a)) {
 
-			/*case AST_TYPE::LITERAL_NUMBER: {
-				cout << "AST_NODE<AST_TYPE::LITERAL_NUMBER," << get<1>(a) << ">\n";
-				break;
-			}*/
-			SWITCH_AST_TYPE_FORMAT(LITERAL_NUMBER)
-			SWITCH_AST_TYPE_FORMAT(LITERAL_STRING)
-			SWITCH_AST_TYPE_FORMAT(OP_ADD)
-			SWITCH_AST_TYPE_FORMAT(OP_SUB)
-			SWITCH_AST_TYPE_FORMAT(OP_MUL)
-			SWITCH_AST_TYPE_FORMAT(OP_POW)
-			SWITCH_AST_TYPE_FORMAT(POP_STACK)
-			SWITCH_AST_TYPE_FORMAT(WHITESPACE)
-			
+
+				SWITCH_AST_TYPE_FORMAT(LITERAL_NUMBER)
+					SWITCH_AST_TYPE_FORMAT(LITERAL_STRING)
+					SWITCH_AST_TYPE_FORMAT(OP_ADD)
+					SWITCH_AST_TYPE_FORMAT(OP_SUB)
+					SWITCH_AST_TYPE_FORMAT(OP_MUL)
+					SWITCH_AST_TYPE_FORMAT(OP_POW)
+					SWITCH_AST_TYPE_FORMAT(POP_STACK)
+					SWITCH_AST_TYPE_FORMAT(WHITESPACE)
+					SWITCH_AST_TYPE_FORMAT(OP_SWAP)
+
 			}
 		}
 	}
@@ -196,6 +200,11 @@ public:
 				ret.push_back(make_tuple(AST_TYPE::OP_POW, ""));
 
 			}
+			// swap  (n1 n2 -- n2 n1 )
+			else if (s == "swap") {
+				ret.push_back(make_tuple(AST_TYPE::OP_SWAP, ""));
+
+			}
 			// Exit
 			else if (s == "exit") {
 				cout << "Quiting...\n";
@@ -208,7 +217,7 @@ public:
 
 
 
-			
+
 
 
 
@@ -232,9 +241,9 @@ public:
 				break; }
 			case AST_TYPE::OP_ADD: {
 				if (data_stack.size() >= 2) {
-					auto v1 = stod(data_stack.back());
+					double v1 = stod(data_stack.back());
 					data_stack.pop_back();
-					auto v2 = stod(data_stack.back());
+					double v2 = stod(data_stack.back());
 					data_stack.pop_back();
 					auto val = (v1 + v2);
 					cout << val;
@@ -260,9 +269,9 @@ public:
 				break; }
 			case AST_TYPE::OP_SUB: {
 				if (data_stack.size() >= 2) {
-					auto v1 = stod(data_stack.back());
+					double v1 = stod(data_stack.back());
 					data_stack.pop_back();
-					auto v2 = stod(data_stack.back());
+					double v2 = stod(data_stack.back());
 					data_stack.pop_back();
 					auto val = (v1 - v2);
 					std::ostringstream strs;
@@ -277,9 +286,9 @@ public:
 			}
 			case AST_TYPE::OP_MUL: {
 				if (data_stack.size() >= 2) {
-					auto v1 = stod(data_stack.back());
+					double v1 = stod(data_stack.back());
 					data_stack.pop_back();
-					auto v2 = stod(data_stack.back());
+					double v2 = stod(data_stack.back());
 					data_stack.pop_back();
 					auto val = (v1 * v2);
 					std::ostringstream strs;
@@ -294,11 +303,11 @@ public:
 			}
 			case AST_TYPE::OP_POW: {
 				if (data_stack.size() >= 2) {
-					auto v1 = stod(data_stack.back());
+					double v1 = stod(data_stack.back());
 					data_stack.pop_back();
-					auto v2 = stod(data_stack.back());
+					double v2 = stod(data_stack.back());
 					data_stack.pop_back();
-					auto val = std::pow(v1,v2);
+					auto val = std::pow(v1, v2);
 					std::ostringstream strs;
 					strs << val;
 					std::string str = strs.str();
@@ -308,6 +317,25 @@ public:
 					disp_error(ERRORS::MISSING_STACK_OPERANDS);
 				}
 				break;
+			}
+			case AST_TYPE::OP_SWAP: {
+				if (data_stack.size() >= 2) {
+					double v1 = stod(data_stack.back());
+					data_stack.pop_back();
+					double v2 = stod(data_stack.back());
+					data_stack.pop_back();
+					std::ostringstream strs1;
+					strs1 << v1;
+					std::string str1 = strs1.str();
+					std::ostringstream strs2;
+					strs2 << v2;
+					std::string str2 = strs2.str();
+					data_stack.push_back(str1);
+					data_stack.push_back(str2);
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS);
+				}
 			}
 			}
 		}

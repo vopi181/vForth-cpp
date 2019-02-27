@@ -7,6 +7,7 @@
 #include <regex>
 #include <numeric>
 #include <sstream>
+#include <cmath>
 using namespace std;
 
 
@@ -15,7 +16,7 @@ using namespace std;
 
 
 #define SWITCH_AST_TYPE_FORMAT(TYPE) \
-	case AST_TYPE::##TYPE : { \
+	case AST_TYPE::TYPE : { \
 		cout << "AST_NODE<AST_TYPE::" << #TYPE << ", " << get<1>(a) << ">\n"; \
 		break; \
 	} 

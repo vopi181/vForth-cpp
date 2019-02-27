@@ -8,7 +8,7 @@
 
 int main()
 {
-
+     
 	Forth f;
 	if (true) {
 		while (true) {

@@ -106,11 +106,18 @@ class Forth {
 public:
 
 	Forth() {
-		
+		this->std_repl = false;
 	}
+	Forth(bool repl) {
+		this->std_repl = repl;
+	}
+
 	~Forth() {
 
 	}
+	
+	// REPL helper
+	bool std_repl;
 
 	// A simple util function to dump the AST
 	void dump_AST(AST ast) {
@@ -228,7 +235,11 @@ public:
 
 	}
 	void interp_AST(AST ast) {
+		bool should_print;
 		for (int i = 0; i < ast.size(); i++) {
+			should_print = true;
+
+			
 			AST_NODE curr = ast.at(i);
 
 
@@ -247,7 +258,6 @@ public:
 					double v2 = stod(data_stack.back());
 					data_stack.pop_back();
 					auto val = (v1 + v2);
-					cout << val;
 					std::ostringstream strs;
 					strs << val;
 					std::string str = strs.str();
@@ -263,6 +273,7 @@ public:
 				if (data_stack.size() >= 1) {
 					cout << data_stack.back();
 					data_stack.pop_back();
+					should_print = false;
 				}
 				else {
 					disp_error(ERRORS::MISSING_STACK_OPERANDS);
@@ -338,6 +349,11 @@ public:
 					disp_error(ERRORS::MISSING_STACK_OPERANDS);
 				}
 			}
+			}
+		}
+		if(this->std_repl) {
+			if(should_print) {
+				cout << data_stack[data_stack.size() - 1];
 			}
 		}
 	}

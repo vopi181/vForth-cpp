@@ -8,14 +8,17 @@
 
 int main()
 {
-     
-	Forth f;
+    
+	Forth f(true);
+
 	if (true) {
+		
 		while (true) {
-			cout << "> ";
+			cout << ">";
 			string inp;
-			cin >> inp;
+			std::getline(std::cin, inp);
 			f.interp(inp);
+			cout << endl;
 			
 		}
 	}

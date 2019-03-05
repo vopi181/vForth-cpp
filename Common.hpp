@@ -1,8 +1,39 @@
+#pragma once
 #include <vector>
 #include <string>
 #include <sstream>
 #include <iostream>
 using namespace std;
+// Difference Literal AST node types
+enum AST_TYPE {
+	LITERAL_NUMBER,
+	POP_STACK,
+	OP_ADD,
+	OP_SUB,
+	OP_MUL,
+	OP_POW,
+	WHITESPACE,
+	LITERAL_STRING,
+	OP_DUP,
+	OP_SWAP,
+	OP_ISNEG,
+	OP_ISZERO,
+	OP_ISPOS,
+	OP_LESSTHAN,
+	OP_NOTEQ,
+	OP_EQ,
+	OP_TO_R,
+	OP_GREATERTHAN,
+	OP_EXCLAIM,
+	OP_PLUSEXCLAIM,
+	OP_START_SUB,
+	OP_END_SUB,
+	FUNCTION
+
+};
+
+typedef tuple<AST_TYPE, string> AST_NODE;
+typedef vector<AST_NODE> AST;
 
 #define SWITCH_AST_TYPE_FORMAT(TYPE) \
 	case AST_TYPE::TYPE : { \
@@ -50,7 +81,7 @@ void* mem_str_to_ptr(const string& str) {
 	unsigned long ul;
 
 
-	sscanf(str.c_str(), "%lx", &ul);
+	sscanf_s(str.c_str(), "%lx", &ul);
 	return (void*)(uintptr_t)ul;
 }
 
@@ -70,47 +101,18 @@ enum ERRORS {
 
 // Display Errors
 // @TODO add token or line number or smth to errors
-void disp_error(ERRORS e) {
+void disp_error(ERRORS e, int line) {
 	switch (e)
 	{
 	case MISSING_STACK_OPERANDS:
-		cout << "Interp. Error: MISSING_STACK_OPERANDS\n";
+		cout << "[" << line << "] Interp. Error: MISSING_STACK_OPERANDS\n";
 		break;
 	case UNKNOWN_OP:
-		cout << "Inter. Error: UNKNOWN_OP\n";
+		cout << "[" << line << "] Interp. Error: UNKNOWN_OP\n";
 		break;
 	default:
-		cout << "Interp. Error: UNKNOWN_ERROR";
+		cout << "[" << line << "] Interp. Error: UNKNOWN_ERROR";
 		break;
 	}
 }
 
-// Difference Literal AST node types
-enum AST_TYPE {
-	LITERAL_NUMBER,
-	POP_STACK,
-	OP_ADD,
-	OP_SUB,
-	OP_MUL,
-	OP_POW,
-	WHITESPACE,
-	LITERAL_STRING,
-	OP_DUP,
-	OP_SWAP,
-	OP_ISNEG,
-	OP_ISZERO,
-	OP_ISPOS,
-	OP_LESSTHAN,
-	OP_NOTEQ,
-	OP_EQ,
-	OP_TO_R,
-	OP_GREATERTHAN,
-	OP_EXCLAIM,
-	OP_PLUSEXCLAIM,
-	OP_START_SUB,
-	OP_END_SUB,
-
-};
-
-typedef tuple<AST_TYPE, string> AST_NODE;
-typedef vector<AST_NODE> AST;

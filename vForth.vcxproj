@@ -99,7 +99,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
@@ -153,9 +153,13 @@
   <ItemGroup>
     <ClInclude Include="Forth.hpp" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Common.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vForth.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="prims.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

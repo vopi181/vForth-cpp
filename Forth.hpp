@@ -1,13 +1,11 @@
 #pragma once
 
-#include <iostream>
+
 #include <tuple>
-#include <vector>
-#include <string>
 #include <regex>
 #include <numeric>
-#include <sstream>
 #include <cmath>
+#include "Common.hpp"
 using namespace std;
 
 
@@ -15,93 +13,13 @@ using namespace std;
 
 
 
-#define SWITCH_AST_TYPE_FORMAT(TYPE) \
-	case AST_TYPE::TYPE : { \
-		cout << "AST_NODE<AST_TYPE::" << #TYPE << ", " << get<1>(a) << ">\n"; \
-		break; \
-	} 
 
-
-
-
-// Helper funcs
-
-
-// "Tokenize" a string into a vector of strings
-vector<string> split(const string& str, const string& delim)
-{
-	vector<string> tokens;
-	size_t prev = 0, pos = 0;
-	do
-	{
-		pos = str.find(delim, prev);
-		if (pos == string::npos) pos = str.length();
-		string token = str.substr(prev, pos - prev);
-		if (!token.empty()) tokens.push_back(token);
-		prev = pos + delim.length();
-	} while (pos < str.length() && prev < str.length());
-	return tokens;
-}
-
-// Old
-bool is_digit(char c) {
-	if (c >= '0' && c <= '9') {
-		return true;
-	}
-	return false;
-}
-
-// Old
-int ascii_num_to_val(char c) {
-	return c - '0';
-}
-
-
-// Error Types
-enum ERRORS {
-	MISSING_STACK_OPERANDS,
-	UNKNOWN_OP,
-};
-
-// Display Errors
-// @TODO add token or line number or smth to errors
-void disp_error(ERRORS e) {
-	switch (e)
-	{
-	case MISSING_STACK_OPERANDS:
-		cout << "Interp. Error: MISSING_STACK_OPERANDS\n";
-		break;
-	case UNKNOWN_OP:
-		cout << "Inter. Error: UNKNOWN_OP\n";
-		break;
-	default:
-		cout << "Interp. Error: UNKNOWN_ERROR";
-		break;
-	}
-}
-
-// Difference Literal AST node types
-enum AST_TYPE {
-	LITERAL_NUMBER,
-	POP_STACK,
-	OP_ADD,
-	OP_SUB,
-	OP_MUL,
-	OP_POW,
-	WHITESPACE,
-	LITERAL_STRING,
-	OP_DUP,
-	OP_SWAP,
-};
-
-typedef tuple<AST_TYPE, string> AST_NODE;
-typedef vector<AST_NODE> AST;
 
 
 class Forth {
 
 	vector<string> data_stack;
-	vector<AST_TYPE> op_stack;
+	vector<string> ret_stack;
 
 public:
 
@@ -185,10 +103,10 @@ public:
 				}
 			}
 
-			// Check if token is a number
+			// Check if token is a string
 			regex_search(s, sm, re_string);
 			if (sm.length() > 0) {
-				ret.push_back(make_tuple(AST_TYPE::LITERAL_STRING, dm[0].str()));
+				ret.push_back(make_tuple(AST_TYPE::LITERAL_STRING, sm[0].str()));
 				cout << dm[0].str();
 			}
 
@@ -235,7 +153,7 @@ public:
 
 	}
 	void interp_AST(AST ast) {
-		bool should_print;
+		bool should_print = true;
 		for (int i = 0; i < ast.size(); i++) {
 			should_print = true;
 

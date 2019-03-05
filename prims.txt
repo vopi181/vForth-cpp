@@ -1,0 +1,196 @@
+0             - 0
+Push the integer 0 onto the stack.
+
+0<         N1 - FLAG
+Return a true FLAG if N1 is negative.
+
+0=         N1 - FLAG
+Return a true FLAG if N1 is zero.
+
+0          N1 - FLAG
+Return a true FLAG if N1 is greater than zero.
+
+0BRANCH    N1 - 
+If N1 is false (value is 0) perform a branch to the
+address in the next program cell, otherwise continue.
+
+1+         N1 - N2
+Add one to N1, returning N2.
+
+1-         N1 - N2
+Subtract one from N1, returning N2.
+
+2+         N1 - N2
+Add two to N1, returning N2.
+
+2*         N1 - N2
+Multiply N1 by two, returning N2.
+
+2/         N1 - N2
+Divide N1 by two, returning N2.
+
+4+         N1 - N2
+Add four to N1, returning N2.
+
+<       N1 N2 - FLAG
+Return a true FLAG if N1 is less than N2.
+
+<>      N1 N2 - FLAG
+Return a true FLAG if N1 is not equal to N2.
+
+=       N1 N2 - FLAG
+Return a true FLAG if N1 equals N2.
+
+R          N1 - 
+Push N1 onto the return stack.
+
+>       N1 N2 - FLAG
+Return a true FLAG if N1 is greater than N2.
+
+!     N1 ADDR -
+Store N1 at location ADDR in program memory.
+
++       N1 N2 - N3
+Add N1 and N2, giving sum N3.
+
++!    N1 ADDR -
+Add N1 to the value pointed to by ADDR.
+
+-       N1 N2 - N3
+Subtract N2 from N1, giving difference N3.
+
+:             -
+Define the start of a subroutine.  The primitive
+[CALL] is compiled every time this subroutine is
+reference by other definitions.
+
+;             -
+Perform a subroutine return and end the definition
+of a subroutine.  The primitive [EXIT] is compiled.
+
+?DUP       N1 - N1 N1   ( if N1 non-zero )
+           N1 - N1      ( if N1 is zero  )
+Conditionally duplicate the input N1 if it is
+non-zero.
+
+@       ADDR  - N1<
+Fetch the value at location ADDR in program memory,
+returning N1.
+
+ABS        N1 - N2
+Take the absolute value of N1 and return the result N2.
+
+AND     N1 N2 - N3
+Perform a bitwise AND on N1 and N2, giving result N3.
+
+BRANCH        -
+Perform an unconditional branch to the compiled in-line
+address.
+
+D!    D1 ADDR -
+Store the double-precision value D1 at the two memory
+words starting at ADDR.
+
+D+      D1 D2 - D3
+Return the double precision sum of D1 and D2 as D3.
+
+D@       ADDR - D1
+Fetch the double precision value D1 from memory starting
+at address ADDR.
+
+DDROP      D1 -
+Drop the double-precision integer D1.
+
+DDUP       D1 - D1 D1
+Duplicate D1 on the stack.
+
+DNEGATE    D1 - D2
+Return D2, which is the two's complement of D1.
+
+DROP       N1 - 
+Drop N1 from the stack.
+
+DSWAP   D1 D2 - D2 D1
+Swap the top two double-precision numbers on the stack.
+
+DUP        N1 - N1 N1
+Duplicate N1, returning a second copy of it on the stack.
+
+I             - N1
+Return the index of the currently active loop.
+
+I'            - N1
+Return the limit of the currently active loop.
+
+J             - N1
+Return the index of the outer loop in a nested loop structure.
+
+LEAVE         -
+Set the loop counter on the return stack equal to the
+loop limit to force an exit from the loop.
+
+LIT           - N1
+Treat the compiled in-line value as an integer constant,
+and push it onto the stack as N1.
+
+NEGATE     N1 - N2
+Return N2, which is the two's complement of N1
+NOP           -
+Do nothing.
+
+NOT     FLAG1 - FLAG2
+Synonym for 0=.  Takes the inverse of a flag value.
+
+OR      N1 N2 - N3
+Perform a bitwise OR on N1 and N2, giving result N3.
+
+OVER    N1 N2 - N1 N2 N1
+Push a copy of the second element on the stack, N1, onto
+the top of the stack.
+
+PICK   ... N1 - ... N2
+Copy the N1'th element deep in the data stack to the top.
+In Forth-83, 0 PICK is equivalent to DUP , and 1 PICK 
+is equivalent to OVER .
+
+R>           - N1
+Pop the top element of the return stack, and push it onto
+the data stack as N1.
+
+R@            - N1
+Copy the top Return Stack word N1 onto the Data Stack.
+
+ROLL   ... N1 - ... N2
+Pull the N1'th element deep in the data stack to the top,
+closing the hole left in the stack.  In Forth-83, 1 ROLL
+is equivalent to SWAP , and 2 ROLL is equivalent to ROT.
+
+ROT  N1 N2 N3 - N2 N3 N1
+Pull the third element down in the stack onto the top of
+the stack.
+
+S-D        N1 - D2
+Sign extend N1 to occupy two words, making it a double
+precision integer D2.
+
+SWAP    N1 N2 - N2 N1
+Swap the order of the top two stack elements.
+
+U<      U1 U2 - FLAG
+Return a true FLAG if U1 is less than U2 when compared
+as unsigned integers.
+
+U       U1 U2 - FLAG
+Return a true FLAG if U1 is greater than U2 when compared
+as unsigned integers.
+
+U*      N1 N2 - D3
+Perform unsigned integer multiplication on N1 and N2,
+yielding the unsigned double precision result D3.
+
+U/MOD   D1 N2 - N3 N4
+Perform unsigned integer division on D1 and N2, yielding
+the quotient N4 and the remainder N3.
+
+XOR     N1 N2 - N3
+Perform a bitwise exclusive OR on N1 and N2, giving result N3.

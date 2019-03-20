@@ -60,6 +60,7 @@ public:
 					SWITCH_AST_TYPE_FORMAT(POP_STACK)
 					SWITCH_AST_TYPE_FORMAT(WHITESPACE)
 					SWITCH_AST_TYPE_FORMAT(OP_SWAP)
+					SWITCH_AST_TYPE_FORMAT(OP_DUP)
 
 			}
 		}
@@ -167,6 +168,8 @@ public:
 				PRIM_CASE(swap, AST_TYPE::OP_SWAP)
 				PRIM_CASE(:, AST_TYPE::OP_START_SUB)
 				PRIM_CASE(;, AST_TYPE::OP_END_SUB)
+				PRIM_CASE(dup, AST_TYPE::OP_DUP)
+				PRIM_CASE(emit, AST_TYPE::OP_EMIT)
 
 
 
@@ -469,6 +472,35 @@ public:
 				} else {
 					disp_error(ERRORS::UNKNOWN_OP, __LINE__);
 
+				}
+				break;
+			}
+			case AST_TYPE::OP_DUP: {
+				if (data_stack.size() >= 1) {
+					string v1 = data_stack.back();
+					data_stack.pop_back();
+					
+					data_stack.push_back(v1);
+					data_stack.push_back(v1);
+
+
+
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+				}
+				break;
+			}
+			case AST_TYPE::OP_EMIT: {
+				if (data_stack.size() >= 1) {
+					char v1 = stoi(data_stack.back());
+					data_stack.pop_back();
+					std::cout << v1;
+					
+
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
 				}
 				break;
 			}

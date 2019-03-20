@@ -62,6 +62,14 @@ public:
 					SWITCH_AST_TYPE_FORMAT(OP_SWAP)
 					SWITCH_AST_TYPE_FORMAT(OP_DUP)
 					SWITCH_AST_TYPE_FORMAT(OP_CR)
+					SWITCH_AST_TYPE_FORMAT(OP_MOD)
+					SWITCH_AST_TYPE_FORMAT(OP_OVER)
+					SWITCH_AST_TYPE_FORMAT(OP_ROT)
+					SWITCH_AST_TYPE_FORMAT(OP_DROP)
+
+
+
+
 
 
 			}
@@ -200,6 +208,11 @@ public:
 				PRIM_CASE(;, AST_TYPE::OP_END_SUB)
 				PRIM_CASE(dup, AST_TYPE::OP_DUP)
 				PRIM_CASE(emit, AST_TYPE::OP_EMIT)
+				PRIM_CASE(mod, AST_TYPE::OP_MOD)
+				PRIM_CASE(over, AST_TYPE::OP_OVER)
+				PRIM_CASE(rot, AST_TYPE::OP_ROT)
+				PRIM_CASE(drop, AST_TYPE::OP_DROP)
+
 
 
 
@@ -385,7 +398,7 @@ public:
 					std::string str2 = strs2.str();
 					int val = v1 == v2 ? 1 : 0;
 					std::ostringstream strs3;
-					strs1 << val;
+					strs3 << val;
 					std::string str3 = strs3.str();
 					data_stack.push_back(str3);
 				} else {
@@ -407,7 +420,7 @@ public:
 					std::string str2 = strs2.str();
 					int val = v1 < v2 ? 1 : 0;
 					std::ostringstream strs3;
-					strs1 << val;
+					strs3 << val;
 					std::string str3 = strs3.str();
 					if (val > 0) {
 						data_stack.push_back("1");
@@ -434,7 +447,7 @@ public:
 					std::string str2 = strs2.str();
 					int val = v1 > v2 ? 1 : 0;
 					std::ostringstream strs3;
-					strs1 << val;
+					strs3 << val;
 					std::string str3 = strs3.str();
 					if (val > 0) {
 						data_stack.push_back("1");
@@ -461,7 +474,7 @@ public:
 					std::string str2 = strs2.str();
 					int val = v1 != v2 ? 1 : 0;
 					std::ostringstream strs3;
-					strs1 << val;
+					strs3 << val;
 					std::string str3 = strs3.str();
 					data_stack.push_back(str3);
 				} else {
@@ -536,6 +549,76 @@ public:
 			}
 			case AST_TYPE::OP_CR: {
 				cout << endl;
+				break;
+			}
+			case AST_TYPE::OP_MOD: {
+				if (data_stack.size() >= 2) {
+					double v2 = stod(data_stack.back());
+					data_stack.pop_back();
+					double v1 = stod(data_stack.back());
+					data_stack.pop_back();
+					std::ostringstream strs1;
+					strs1 << v1;
+					std::string str1 = strs1.str();
+					std::ostringstream strs2;
+					strs2 << v2;
+					std::string str2 = strs2.str();
+					double val = (int)v1 % (int)v2;
+					std::ostringstream strs3;
+					strs3 << val;
+					std::string str3 = strs3.str();
+					data_stack.push_back(str3);
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+				}
+				break;
+			}
+			case AST_TYPE::OP_OVER: {
+				if (data_stack.size() >= 2) {
+					auto v2 = data_stack.back();
+					data_stack.pop_back();
+					auto v1 = data_stack.back();
+					
+					data_stack.push_back(v2);
+					data_stack.push_back(v1);
+
+
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+				}
+				break;
+			}
+			case AST_TYPE::OP_ROT: {
+				if (data_stack.size() >= 3) {
+					auto v3 = data_stack.back();
+					data_stack.pop_back();
+					auto v2 = data_stack.back();
+					data_stack.pop_back();
+					auto v1 = data_stack.back();
+					data_stack.pop_back();
+
+
+					data_stack.push_back(v2);
+					data_stack.push_back(v1);
+					data_stack.push_back(v3);
+
+
+
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+				}
+				break;
+			}
+			case AST_TYPE::OP_DROP: {
+				if (data_stack.size() >= 1) {
+					data_stack.pop_back();
+				}
+				else {
+					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+				}
 				break;
 			}
 			default:

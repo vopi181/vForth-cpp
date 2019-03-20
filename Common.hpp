@@ -30,6 +30,10 @@ enum AST_TYPE {
 	OP_END_SUB,
 	OP_EMIT,
 	OP_CR,
+	OP_MOD,
+	OP_OVER,
+	OP_ROT,
+	OP_DROP,
 	FUNCTION
 
 };

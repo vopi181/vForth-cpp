@@ -17,6 +17,15 @@ public:
 
 	}
 
+	string Dump_AST() {
+
+		// it gets optimized away ok bud?
+		string ret = "";
+		for (AST_NODE n : func_ast) {
+			ret += " " + std::get<1>(n);
+		}
+		return ret;
+	}
 
 
 

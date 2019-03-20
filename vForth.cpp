@@ -18,7 +18,8 @@ int main()
 			string inp;
 			std::getline(std::cin, inp);
 			f.interp(inp);
-			cout << endl;
+			cout << endl << "ok" << endl;
+			
 			
 		}
 	}

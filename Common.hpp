@@ -29,6 +29,7 @@ enum AST_TYPE {
 	OP_START_SUB,
 	OP_END_SUB,
 	OP_EMIT,
+	OP_CR,
 	FUNCTION
 
 };

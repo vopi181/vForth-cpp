@@ -41,7 +41,7 @@ public:
 	~Forth() {
 
 	}
-	
+
 	// REPL helper
 	bool std_repl;
 
@@ -61,6 +61,8 @@ public:
 					SWITCH_AST_TYPE_FORMAT(WHITESPACE)
 					SWITCH_AST_TYPE_FORMAT(OP_SWAP)
 					SWITCH_AST_TYPE_FORMAT(OP_DUP)
+					SWITCH_AST_TYPE_FORMAT(OP_CR)
+
 
 			}
 		}
@@ -70,9 +72,31 @@ public:
 		cout << endl;
 		cout << "=========\n";
 		for (int i = data_stack.size() - 1; i >= 0; i--) {
-			cout << i << ": " << data_stack.at(i) << "\n";
+			cout << i << ": " << data_stack.at(i) << endl;
 		}
 		cout << "=========\n";
+	}
+	void dump_functions() {
+		cout << endl;
+		cout << "=========\n";
+		int f_i = 0;
+		for (auto it = func_vec.begin(); it != func_vec.end(); ++it) {
+			cout << f_i << ": " << it->first << endl;
+			f_i++;
+		}
+		cout << "=========\n";
+
+	}
+	void dump_functions_defs() {
+		cout << endl;
+		cout << "=========\n";
+		int f_i = 0;
+		for (auto it = func_vec.begin(); it != func_vec.end(); ++it) {
+			cout << f_i << ": " << it->first << " -> " << it->second.Dump_AST() << endl;
+			f_i++;
+		}
+		cout << "=========\n";
+
 	}
 	AST lex(const string& inp) {
 		AST ret;
@@ -155,6 +179,12 @@ public:
 			// Dump Stack
 			else if (s == "ds") {
 				dump_stack();
+			}
+			else if (s == "df") {
+				dump_functions();
+			}
+			else if (s == "df_def") {
+				dump_functions_defs();
 			}
 			
 			PRIM_CASE(0 < , AST_TYPE::OP_ISNEG)
@@ -502,6 +532,10 @@ public:
 				else {
 					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
 				}
+				break;
+			}
+			case AST_TYPE::OP_CR: {
+				cout << endl;
 				break;
 			}
 			default:

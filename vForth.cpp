@@ -13,6 +13,9 @@ int main()
 
 	if (true) {
 		
+
+		cout << "vForth-cpp by Dominic Pace\n";
+		cout << "Compiled on " << __DATE__ << " at " << __TIME__ << "\n";
 		while (true) {
 			cout << ">";
 			string inp;

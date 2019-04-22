@@ -27,7 +27,9 @@ class Forth {
 
 	vector<string> data_stack;
 	vector<string> ret_stack;
-	std::unordered_map<string, Function> func_vec;
+	std::unordered_map<string, Function> func_vec; 
+	ParseFlags flags;
+	int stack_before_op = 0;
 
 public:
 
@@ -66,6 +68,12 @@ public:
 					SWITCH_AST_TYPE_FORMAT(OP_OVER)
 					SWITCH_AST_TYPE_FORMAT(OP_ROT)
 					SWITCH_AST_TYPE_FORMAT(OP_DROP)
+					SWITCH_AST_TYPE_FORMAT(OP_IF)
+					SWITCH_AST_TYPE_FORMAT(OP_AND)
+					SWITCH_AST_TYPE_FORMAT(OP_OR)
+					SWITCH_AST_TYPE_FORMAT(OP_THEN)
+
+
 
 
 
@@ -115,6 +123,9 @@ public:
 
 		regex re_d("\\d+");
 		regex re_string("\"(.*)\"");
+
+		//@TODO @HACK for the love of god, i need to make user defined functions not needing to be in all caps, but focusing on other stuff
+		// It will require reworking some refactoring...
 		regex re_func("([A-Z]*)");
 		for (int i = 0; i < tokens.size(); i++) {
 			auto old_ret_len = ret.size();
@@ -164,6 +175,7 @@ public:
 			regex_search(s, fm, re_func);
 			if (fm.length() > 0) {
 				ret.push_back(make_tuple(AST_TYPE::FUNCTION, fm[0].str()));
+				
 			}
 
 			// Built ins
@@ -212,6 +224,12 @@ public:
 				PRIM_CASE(over, AST_TYPE::OP_OVER)
 				PRIM_CASE(rot, AST_TYPE::OP_ROT)
 				PRIM_CASE(drop, AST_TYPE::OP_DROP)
+				PRIM_CASE(if, AST_TYPE::OP_IF)
+				PRIM_CASE(and, AST_TYPE::OP_AND)
+				PRIM_CASE(or, AST_TYPE::OP_OR)
+				PRIM_CASE(then, AST_TYPE::OP_THEN)
+
+
 
 
 
@@ -230,401 +248,474 @@ public:
 		for (int i = 0; i < ast.size(); i++) {
 			should_print = true;
 
-			
+			this->stack_before_op = this->data_stack.size();
+		
+
 			AST_NODE curr = ast.at(i);
 
+			if(!flags.IfTrue && !flags.InIfDef) {
+				cout << "Exec. " << get<0>(curr) << "\n";
 
-			switch (get<0>(curr)) {
+				switch (get<0>(curr)) {
 
-			case AST_TYPE::LITERAL_NUMBER: {
-				data_stack.push_back(get<1>(curr));
-				break; }
-			case AST_TYPE::LITERAL_STRING: {
-				data_stack.push_back(get<1>(curr));
-				break; }
-			case AST_TYPE::OP_ADD: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = (v1 + v2);
-					std::ostringstream strs;
-					strs << val;
-					std::string str = strs.str();
-					data_stack.push_back(str);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break; }
-			case AST_TYPE::WHITESPACE:
-				should_print = false;
-				break;
-			case AST_TYPE::POP_STACK: {
-				if (data_stack.size() >= 1) {
-					cout << data_stack.back();
-					data_stack.pop_back();
+				case AST_TYPE::LITERAL_NUMBER: {
+					data_stack.push_back(get<1>(curr));
+					break; }
+				case AST_TYPE::LITERAL_STRING: {
+					data_stack.push_back(get<1>(curr));
+					break; }
+				case AST_TYPE::OP_ADD: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = (v1 + v2);
+						std::ostringstream strs;
+						strs << val;
+						std::string str = strs.str();
+						data_stack.push_back(str);
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break; }
+				case AST_TYPE::WHITESPACE:
 					should_print = false;
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break; }
-			case AST_TYPE::OP_SUB: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = (v1 - v2);
-					std::ostringstream strs;
-					strs << val;
-					std::string str = strs.str();
-					data_stack.push_back(str);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_MUL: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = (v1 * v2);
-					std::ostringstream strs;
-					strs << val;
-					std::string str = strs.str();
-					data_stack.push_back(str);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_POW: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = std::pow(v1, v2);
-					std::ostringstream strs;
-					strs << val;
-					std::string str = strs.str();
-					data_stack.push_back(str);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_SWAP: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					std::ostringstream strs2;
-					strs2 << v2;
-					std::string str2 = strs2.str();
-					data_stack.push_back(str1);
-					data_stack.push_back(str2);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_ISZERO: {
-				if (data_stack.size() >= 1) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = v1 == 0 ? 1 : 0;
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					data_stack.push_back(str1);
-
-
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_ISNEG: {
-				if (data_stack.size() >= 1) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = v1 < 0 ? 1 : 0;
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					data_stack.push_back(str1);
-
-
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_ISPOS: {
-				if (data_stack.size() >= 1) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					auto val = v1 > 0 ? 1 : 0;
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					data_stack.push_back(str1);
-
-
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_EQ: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					std::ostringstream strs2;
-					strs2 << v2;
-					std::string str2 = strs2.str();
-					int val = v1 == v2 ? 1 : 0;
-					std::ostringstream strs3;
-					strs3 << val;
-					std::string str3 = strs3.str();
-					data_stack.push_back(str3);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_LESSTHAN: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					std::ostringstream strs2;
-					strs2 << v2;
-					std::string str2 = strs2.str();
-					int val = v1 < v2 ? 1 : 0;
-					std::ostringstream strs3;
-					strs3 << val;
-					std::string str3 = strs3.str();
-					if (val > 0) {
-						data_stack.push_back("1");
+					break;
+				case AST_TYPE::POP_STACK: {
+					if (data_stack.size() >= 1) {
+						cout << data_stack.back();
+						data_stack.pop_back();
+						should_print = false;
 					}
 					else {
-						data_stack.push_back("0");
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
 					}
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_GREATERTHAN: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					std::ostringstream strs2;
-					strs2 << v2;
-					std::string str2 = strs2.str();
-					int val = v1 > v2 ? 1 : 0;
-					std::ostringstream strs3;
-					strs3 << val;
-					std::string str3 = strs3.str();
-					if (val > 0) {
-						data_stack.push_back("1");
+					break; }
+				case AST_TYPE::OP_SUB: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = (v1 - v2);
+						std::ostringstream strs;
+						strs << val;
+						std::string str = strs.str();
+						data_stack.push_back(str);
 					}
 					else {
-						data_stack.push_back("0");
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
 					}
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					break;
 				}
-				break;
-			}
-			case AST_TYPE::OP_NOTEQ: {
-				if (data_stack.size() >= 2) {
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					std::ostringstream strs2;
-					strs2 << v2;
-					std::string str2 = strs2.str();
-					int val = v1 != v2 ? 1 : 0;
-					std::ostringstream strs3;
-					strs3 << val;
-					std::string str3 = strs3.str();
-					data_stack.push_back(str3);
-				} else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				} 
-				break;
-			}
-			case AST_TYPE::OP_START_SUB: {
-				should_print = false;
-				int first = i;
-				AST temp;
-				string func_name = "";
-				int t = first;
-				while ((get<0>(ast.at(t)) != AST_TYPE::OP_END_SUB || get<0>(ast.at(t)) != AST_TYPE::OP_START_SUB) && t < ast.size() -1) {
-					if (t == first + 1) {
-						func_name = get<1>(ast.at(t));
+				case AST_TYPE::OP_MUL: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = (v1 * v2);
+						std::ostringstream strs;
+						strs << val;
+						std::string str = strs.str();
+						data_stack.push_back(str);
 					}
-					if(t > 1)
-						temp.push_back(ast.at(t));
-					t++;
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
 				}
-				int end = t;
-				i = t;
-				
-				func_vec[func_name] = Function(temp);
+				case AST_TYPE::OP_POW: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = std::pow(v1, v2);
+						std::ostringstream strs;
+						strs << val;
+						std::string str = strs.str();
+						data_stack.push_back(str);
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_SWAP: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						std::ostringstream strs2;
+						strs2 << v2;
+						std::string str2 = strs2.str();
+						data_stack.push_back(str1);
+						data_stack.push_back(str2);
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_ISZERO: {
+					if (data_stack.size() >= 1) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = v1 == 0 ? 1 : 0;
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						data_stack.push_back(str1);
 
-				break;
-			}
-			case AST_TYPE::OP_END_SUB: {
-				should_print = false;
-				break;
-			}
-			case AST_TYPE::FUNCTION: {
-				should_print = false;
-				auto temp = func_vec.find(get<1>(curr));
-				if (temp != func_vec.end()) {
-					this->exec_func_string(temp->first);
-				} else {
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_ISNEG: {
+					if (data_stack.size() >= 1) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = v1 < 0 ? 1 : 0;
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						data_stack.push_back(str1);
+
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_ISPOS: {
+					if (data_stack.size() >= 1) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						auto val = v1 > 0 ? 1 : 0;
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						data_stack.push_back(str1);
+
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_EQ: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						std::ostringstream strs2;
+						strs2 << v2;
+						std::string str2 = strs2.str();
+						int val = v1 == v2 ? 1 : 0;
+						std::ostringstream strs3;
+						strs3 << val;
+						std::string str3 = strs3.str();
+						data_stack.push_back(str3);
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_LESSTHAN: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						std::ostringstream strs2;
+						strs2 << v2;
+						std::string str2 = strs2.str();
+						int val = v1 < v2 ? 1 : 0;
+						std::ostringstream strs3;
+						strs3 << val;
+						std::string str3 = strs3.str();
+						if (val > 0) {
+							data_stack.push_back("1");
+						}
+						else {
+							data_stack.push_back("0");
+						}
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_GREATERTHAN: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						std::ostringstream strs2;
+						strs2 << v2;
+						std::string str2 = strs2.str();
+						int val = v1 > v2 ? 1 : 0;
+						std::ostringstream strs3;
+						strs3 << val;
+						std::string str3 = strs3.str();
+						if (val > 0) {
+							data_stack.push_back("1");
+						}
+						else {
+							data_stack.push_back("0");
+						}
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_NOTEQ: {
+					if (data_stack.size() >= 2) {
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						std::ostringstream strs2;
+						strs2 << v2;
+						std::string str2 = strs2.str();
+						int val = v1 != v2 ? 1 : 0;
+						std::ostringstream strs3;
+						strs3 << val;
+						std::string str3 = strs3.str();
+						data_stack.push_back(str3);
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_START_SUB: {
+					should_print = false;
+					flags.InFuncDef = true;
+					int first = i;
+					AST temp;
+					string func_name = "";
+					int t = first;
+					while ((get<0>(ast.at(t)) != AST_TYPE::OP_END_SUB || get<0>(ast.at(t)) != AST_TYPE::OP_START_SUB) && t < ast.size() - 1) {
+						if (t == first + 1) {
+							func_name = get<1>(ast.at(t));
+						}
+						if (t > 1)
+							temp.push_back(ast.at(t));
+						t++;
+					}
+					int end = t;
+					i = t;
+
+					func_vec[func_name] = Function(temp);
+
+					break;
+				}
+				case AST_TYPE::OP_END_SUB: {
+					flags.InFuncDef = false;
+					should_print = false;
+					break;
+				}
+				case AST_TYPE::FUNCTION: {
+					should_print = false;
+					auto temp = func_vec.find(get<1>(curr));
+					if (temp != func_vec.end()) {
+						this->exec_func_string(temp->first);
+					}
+					else {
+						disp_error(ERRORS::UNKNOWN_OP, __LINE__);
+
+					}
+					break;
+				}
+				case AST_TYPE::OP_DUP: {
+					if (data_stack.size() >= 1) {
+						string v1 = data_stack.back();
+						data_stack.pop_back();
+
+						data_stack.push_back(v1);
+						data_stack.push_back(v1);
+
+
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_EMIT: {
+					if (data_stack.size() >= 1) {
+						char v1 = stoi(data_stack.back());
+						data_stack.pop_back();
+						std::cout << v1;
+
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_CR: {
+					cout << endl;
+					break;
+				}
+				case AST_TYPE::OP_MOD: {
+					if (data_stack.size() >= 2) {
+						double v2 = stod(data_stack.back());
+						data_stack.pop_back();
+						double v1 = stod(data_stack.back());
+						data_stack.pop_back();
+						std::ostringstream strs1;
+						strs1 << v1;
+						std::string str1 = strs1.str();
+						std::ostringstream strs2;
+						strs2 << v2;
+						std::string str2 = strs2.str();
+						double val = (int)v1 % (int)v2;
+						std::ostringstream strs3;
+						strs3 << val;
+						std::string str3 = strs3.str();
+						data_stack.push_back(str3);
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_OVER: {
+					if (data_stack.size() >= 2) {
+						auto v2 = data_stack.back();
+						data_stack.pop_back();
+						auto v1 = data_stack.back();
+
+						data_stack.push_back(v2);
+						data_stack.push_back(v1);
+
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_ROT: {
+					if (data_stack.size() >= 3) {
+						auto v3 = data_stack.back();
+						data_stack.pop_back();
+						auto v2 = data_stack.back();
+						data_stack.pop_back();
+						auto v1 = data_stack.back();
+						data_stack.pop_back();
+
+
+						data_stack.push_back(v2);
+						data_stack.push_back(v1);
+						data_stack.push_back(v3);
+
+
+
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_DROP: {
+					if (data_stack.size() >= 1) {
+						data_stack.pop_back();
+					}
+					else {
+						disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+					}
+					break;
+				}
+				case AST_TYPE::OP_IF: {
+					if (flags.InFuncDef) {
+						if (data_stack.size() >= 1) {
+							int v1 = stoi(data_stack.back());
+							data_stack.pop_back();
+							if (v1 > 0) {
+								flags.IfTrue = true;
+
+							}
+						}
+						else {
+							disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+						}
+
+					}
+					else {
+						disp_error(ERRORS::OPERATION_NEED_BLOCK, __LINE__);
+					}
+					flags.InIfDef = true;
+					break;
+				}
+				case AST_TYPE::OP_THEN: {
+					if (flags.InFuncDef) {
+						if (data_stack.size() >= 1) {
+							
+							if (flags.IfTrue) {
+								cout << "Found true flags\n";
+								AST temp_ast;
+
+								for (int i = ast.size() - 2; get<0>(ast.at(i)) != AST_TYPE::OP_IF; i--) {
+									temp_ast.push_back(ast.at(i));
+								}
+								this->interp_AST(temp_ast);
+
+							}
+							else {
+
+							}
+							flags.InIfDef = false;
+						}
+						else {
+							disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+						}
+
+					} else {
+						disp_error(ERRORS::OPERATION_NEED_BLOCK, __LINE__);
+					}
+					flags.IfTrue = false;
+					
+
+					break;
+				}
+				default:
 					disp_error(ERRORS::UNKNOWN_OP, __LINE__);
-
+					should_print = false;
+					break;
 				}
-				break;
-			}
-			case AST_TYPE::OP_DUP: {
-				if (data_stack.size() >= 1) {
-					string v1 = data_stack.back();
-					data_stack.pop_back();
-					
-					data_stack.push_back(v1);
-					data_stack.push_back(v1);
-
-
-
-				}
-				else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_EMIT: {
-				if (data_stack.size() >= 1) {
-					char v1 = stoi(data_stack.back());
-					data_stack.pop_back();
-					std::cout << v1;
-					
-
-				}
-				else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_CR: {
-				cout << endl;
-				break;
-			}
-			case AST_TYPE::OP_MOD: {
-				if (data_stack.size() >= 2) {
-					double v2 = stod(data_stack.back());
-					data_stack.pop_back();
-					double v1 = stod(data_stack.back());
-					data_stack.pop_back();
-					std::ostringstream strs1;
-					strs1 << v1;
-					std::string str1 = strs1.str();
-					std::ostringstream strs2;
-					strs2 << v2;
-					std::string str2 = strs2.str();
-					double val = (int)v1 % (int)v2;
-					std::ostringstream strs3;
-					strs3 << val;
-					std::string str3 = strs3.str();
-					data_stack.push_back(str3);
-				}
-				else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_OVER: {
-				if (data_stack.size() >= 2) {
-					auto v2 = data_stack.back();
-					data_stack.pop_back();
-					auto v1 = data_stack.back();
-					
-					data_stack.push_back(v2);
-					data_stack.push_back(v1);
-
-
-				}
-				else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_ROT: {
-				if (data_stack.size() >= 3) {
-					auto v3 = data_stack.back();
-					data_stack.pop_back();
-					auto v2 = data_stack.back();
-					data_stack.pop_back();
-					auto v1 = data_stack.back();
-					data_stack.pop_back();
-
-
-					data_stack.push_back(v2);
-					data_stack.push_back(v1);
-					data_stack.push_back(v3);
-
-
-
-				}
-				else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			case AST_TYPE::OP_DROP: {
-				if (data_stack.size() >= 1) {
-					data_stack.pop_back();
-				}
-				else {
-					disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
-				}
-				break;
-			}
-			default:
-				disp_error(ERRORS::UNKNOWN_OP, __LINE__);
-				should_print = false;
-				break;
 			}
 			/*if (this->std_repl) {
 				if (should_print) {

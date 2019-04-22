@@ -34,7 +34,11 @@ enum AST_TYPE {
 	OP_OVER,
 	OP_ROT,
 	OP_DROP,
-	FUNCTION
+	OP_IF,
+	OP_AND,
+	OP_OR,
+	FUNCTION,
+	OP_THEN
 
 };
 
@@ -103,6 +107,9 @@ std::string ptr_to_mem_str(void* ptr) {
 enum ERRORS {
 	MISSING_STACK_OPERANDS,
 	UNKNOWN_OP,
+	
+	// Needs to be in ":" block
+	OPERATION_NEED_BLOCK
 };
 
 // Display Errors
@@ -116,9 +123,19 @@ void disp_error(ERRORS e, int line) {
 	case UNKNOWN_OP:
 		cout << "[" << line << "] Interp. Error: UNKNOWN_OP\n";
 		break;
+	case OPERATION_NEED_BLOCK:
+		cout << "[" << line << "] Interp. Error: OPERATION_NEED_BLOCK\n";
+		break;
 	default:
 		cout << "[" << line << "] Interp. Error: UNKNOWN_ERROR";
 		break;
 	}
 }
 
+
+ struct ParseFlags {
+	 bool InFuncDef;
+	 bool InIfDef;
+	 bool IfTrue;
+
+};

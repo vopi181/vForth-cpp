@@ -3,6 +3,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <set>
+
 using namespace std;
 // Difference Literal AST node types
 enum AST_TYPE {
@@ -41,6 +43,10 @@ enum AST_TYPE {
 	OP_THEN
 
 };
+
+
+
+
 
 typedef tuple<AST_TYPE, string> AST_NODE;
 typedef vector<AST_NODE> AST;
@@ -108,6 +114,8 @@ enum ERRORS {
 	MISSING_STACK_OPERANDS,
 	UNKNOWN_OP,
 	
+	//function not in function map ("func_map")
+	UNKNOWN_FUNC,
 	// Needs to be in ":" block
 	OPERATION_NEED_BLOCK
 };
@@ -125,6 +133,9 @@ void disp_error(ERRORS e, int line) {
 		break;
 	case OPERATION_NEED_BLOCK:
 		cout << "[" << line << "] Interp. Error: OPERATION_NEED_BLOCK\n";
+		break;
+	case UNKNOWN_FUNC:
+		cout << "[" << line << "] Interp. Error: UNKNOWN_FUNC\n";
 		break;
 	default:
 		cout << "[" << line << "] Interp. Error: UNKNOWN_ERROR";

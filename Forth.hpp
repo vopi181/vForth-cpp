@@ -27,14 +27,19 @@ class Forth {
 
 	vector<string> data_stack;
 	vector<string> ret_stack;
-	std::unordered_map<string, Function> func_vec; 
+	std::unordered_map<string, Function> func_map; 
 	ParseFlags flags;
 	int stack_before_op = 0;
+	set<string> builtins;
 
 public:
 
 	Forth() {
 		this->std_repl = false;
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds" };
+		for (auto str : builts) {
+			builtins.insert(str);
+		}
 	}
 	Forth(bool repl) {
 		this->std_repl = repl;
@@ -96,7 +101,7 @@ public:
 		cout << endl;
 		cout << "=========\n";
 		int f_i = 0;
-		for (auto it = func_vec.begin(); it != func_vec.end(); ++it) {
+		for (auto it = func_map.begin(); it != func_map.end(); ++it) {
 			cout << f_i << ": " << it->first << endl;
 			f_i++;
 		}
@@ -107,7 +112,7 @@ public:
 		cout << endl;
 		cout << "=========\n";
 		int f_i = 0;
-		for (auto it = func_vec.begin(); it != func_vec.end(); ++it) {
+		for (auto it = func_map.begin(); it != func_map.end(); ++it) {
 			cout << f_i << ": " << it->first << " -> " << it->second.Dump_AST() << endl;
 			f_i++;
 		}
@@ -124,9 +129,8 @@ public:
 		regex re_d("\\d+");
 		regex re_string("\"(.*)\"");
 
-		//@TODO @HACK for the love of god, i need to make user defined functions not needing to be in all caps, but focusing on other stuff
-		// It will require reworking some refactoring...
-		regex re_func("([A-Z]*)");
+		
+		regex re_func("([A-Za-z]*)");
 		for (int i = 0; i < tokens.size(); i++) {
 			auto old_ret_len = ret.size();
 			smatch dm;
@@ -157,27 +161,7 @@ public:
 				}
 			}
 
-			// Check if token is a string
-			regex_search(s, sm, re_string);
-			if (sm.length() > 0) {
-				ret.push_back(make_tuple(AST_TYPE::LITERAL_STRING, sm[0].str()));
-				cout << dm[0].str();
-			}
-
-
-
-			// Check if token is a number
-			regex_search(s, dm, re_d);
-			if (dm.length() > 0) {
-				ret.push_back(make_tuple(AST_TYPE::LITERAL_NUMBER, dm[0].str()));
-			}
-			// Check if token is a func
-			regex_search(s, fm, re_func);
-			if (fm.length() > 0) {
-				ret.push_back(make_tuple(AST_TYPE::FUNCTION, fm[0].str()));
-				
-			}
-
+			
 			// Built ins
 			// [#] = # in stack, where 0 = bottom
 
@@ -206,7 +190,30 @@ public:
 			else if (s == "df_def") {
 				dump_functions_defs();
 			}
-			
+			// Check if token is a string
+			regex_search(s, sm, re_string);
+			if (sm.length() > 0) {
+				ret.push_back(make_tuple(AST_TYPE::LITERAL_STRING, sm[0].str()));
+				cout << dm[0].str();
+			}
+
+
+
+			// Check if token is a number
+			regex_search(s, dm, re_d);
+			if (dm.length() > 0) {
+				ret.push_back(make_tuple(AST_TYPE::LITERAL_NUMBER, dm[0].str()));
+			}
+			// Check if token is a func
+			regex_search(s, fm, re_func);
+			if (fm.length() > 0) {
+
+
+				ret.push_back(make_tuple(AST_TYPE::FUNCTION, fm[0].str()));
+
+
+			}
+
 			PRIM_CASE(0 < , AST_TYPE::OP_ISNEG)
 				PRIM_CASE(0 > , AST_TYPE::OP_ISPOS)
 				PRIM_CASE(0=, AST_TYPE::OP_ISZERO)
@@ -535,7 +542,7 @@ public:
 					int end = t;
 					i = t;
 
-					func_vec[func_name] = Function(temp);
+					func_map[func_name] = Function(temp);
 
 					break;
 				}
@@ -546,13 +553,15 @@ public:
 				}
 				case AST_TYPE::FUNCTION: {
 					should_print = false;
-					auto temp = func_vec.find(get<1>(curr));
-					if (temp != func_vec.end()) {
+					auto temp = func_map.find(get<1>(curr));
+					auto built_temp = builtins.find(get<1>(curr));
+					if (temp != func_map.end()) {
 						this->exec_func_string(temp->first);
 					}
 					else {
-						disp_error(ERRORS::UNKNOWN_OP, __LINE__);
-
+						if (built_temp != builtins.end()) {
+							disp_error(ERRORS::UNKNOWN_FUNC, __LINE__);
+						}
 					}
 					break;
 				}
@@ -732,7 +741,7 @@ public:
 	}
 
 	void exec_func_string(const std::string& func) {
-		AST temp_ast = func_vec[func].func_ast;
+		AST temp_ast = func_map[func].func_ast;
 		this->interp_AST(temp_ast);
 	}
 };

@@ -567,7 +567,6 @@ public:
 					else {
 						bool found = false;
 						for (auto built : builtins) {
-							cout << "built: " << built << " get<1>(curr): " << get<1>(curr) << endl;
 							if (built == get<1>(curr)) {
 								found = true;
 								break;

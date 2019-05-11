@@ -30,7 +30,7 @@ class Forth {
 	std::unordered_map<string, Function> func_map; 
 	ParseFlags flags;
 	int stack_before_op = 0;
-	set<string> builtins;
+	vector<string> builtins;
 
 public:
 
@@ -38,12 +38,16 @@ public:
 		this->std_repl = false;
 		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds" };
 		for (auto str : builts) {
-			builtins.insert(str);
+			builtins.push_back(str);
 		}
 		
 	}
 	Forth(bool repl) {
 		this->std_repl = repl;
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds" };
+		for (auto str : builts) {
+			builtins.push_back(str);
+		}
 	}
 
 	~Forth() {
@@ -556,12 +560,20 @@ public:
 				case AST_TYPE::FUNCTION: {
 					should_print = false;
 					auto temp = func_map.find(get<1>(curr));
-					auto built_temp = builtins.find(get<1>(curr));
+					
 					if (temp != func_map.end()) {
 						this->exec_func_string(temp->first);
 					}
 					else {
-						if (built_temp == builtins.end()) {
+						bool found = false;
+						for (auto built : builtins) {
+							cout << "built: " << built << " get<1>(curr): " << get<1>(curr) << endl;
+							if (built == get<1>(curr)) {
+								found = true;
+								break;
+							}
+						}
+						if (!found) {
 							disp_error(ERRORS::UNKNOWN_FUNC, __LINE__);
 						}
 					}

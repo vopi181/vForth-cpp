@@ -51,6 +51,8 @@ enum AST_TYPE {
 typedef tuple<AST_TYPE, string> AST_NODE;
 typedef vector<AST_NODE> AST;
 
+
+
 #define SWITCH_AST_TYPE_FORMAT(TYPE) \
 	case AST_TYPE::TYPE : { \
 		cout << "AST_NODE<AST_TYPE::" << #TYPE << ", " << get<1>(a) << ">\n"; \

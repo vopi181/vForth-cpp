@@ -40,6 +40,7 @@ public:
 		for (auto str : builts) {
 			builtins.insert(str);
 		}
+		
 	}
 	Forth(bool repl) {
 		this->std_repl = repl;
@@ -190,30 +191,7 @@ public:
 			else if (s == "df_def") {
 				dump_functions_defs();
 			}
-			// Check if token is a string
-			regex_search(s, sm, re_string);
-			if (sm.length() > 0) {
-				ret.push_back(make_tuple(AST_TYPE::LITERAL_STRING, sm[0].str()));
-				cout << dm[0].str();
-			}
-
-
-
-			// Check if token is a number
-			regex_search(s, dm, re_d);
-			if (dm.length() > 0) {
-				ret.push_back(make_tuple(AST_TYPE::LITERAL_NUMBER, dm[0].str()));
-			}
-			// Check if token is a func
-			regex_search(s, fm, re_func);
-			if (fm.length() > 0) {
-
-
-				ret.push_back(make_tuple(AST_TYPE::FUNCTION, fm[0].str()));
-
-
-			}
-
+			
 			PRIM_CASE(0 < , AST_TYPE::OP_ISNEG)
 				PRIM_CASE(0 > , AST_TYPE::OP_ISPOS)
 				PRIM_CASE(0=, AST_TYPE::OP_ISZERO)
@@ -237,6 +215,29 @@ public:
 				PRIM_CASE(then, AST_TYPE::OP_THEN)
 
 
+				// Check if token is a string
+				regex_search(s, sm, re_string);
+			if (sm.length() > 0) {
+				ret.push_back(make_tuple(AST_TYPE::LITERAL_STRING, sm[0].str()));
+				cout << dm[0].str();
+			}
+
+
+
+			// Check if token is a number
+			regex_search(s, dm, re_d);
+			if (dm.length() > 0) {
+				ret.push_back(make_tuple(AST_TYPE::LITERAL_NUMBER, dm[0].str()));
+			}
+			// Check if token is a func
+			regex_search(s, fm, re_func);
+			if (fm.length() > 0) {
+
+
+				ret.push_back(make_tuple(AST_TYPE::FUNCTION, fm[0].str()));
+
+
+			}
 
 
 
@@ -260,8 +261,9 @@ public:
 
 			AST_NODE curr = ast.at(i);
 
-			if(!flags.IfTrue && !flags.InIfDef) {
-				cout << "Exec. " << get<0>(curr) << "\n";
+			if((!flags.IfTrue && flags.InIfDef) || (!flags.InIfDef)) {
+				//@CLEAN
+				//cout << "Exec. " << get<0>(curr) << "\n";
 
 				switch (get<0>(curr)) {
 
@@ -559,7 +561,7 @@ public:
 						this->exec_func_string(temp->first);
 					}
 					else {
-						if (built_temp != builtins.end()) {
+						if (built_temp == builtins.end()) {
 							disp_error(ERRORS::UNKNOWN_FUNC, __LINE__);
 						}
 					}
@@ -673,6 +675,8 @@ public:
 						if (data_stack.size() >= 1) {
 							int v1 = stoi(data_stack.back());
 							data_stack.pop_back();
+							
+
 							if (v1 > 0) {
 								flags.IfTrue = true;
 
@@ -700,6 +704,7 @@ public:
 								for (int i = ast.size() - 2; get<0>(ast.at(i)) != AST_TYPE::OP_IF; i--) {
 									temp_ast.push_back(ast.at(i));
 								}
+								 
 								this->interp_AST(temp_ast);
 
 							}

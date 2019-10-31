@@ -36,7 +36,7 @@ public:
 
 	Forth() {
 		this->std_repl = false;
-		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds" };
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds","emit"};
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
@@ -47,12 +47,13 @@ public:
 	}
 	Forth(bool repl) {
 		this->std_repl = repl;
-		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds" };
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit"};
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
 		flags.IfTrue = false;
 		flags.InIfDef = false;
+		flags.IfSkipToThen = false;
 	}
 
 	~Forth() {
@@ -87,6 +88,8 @@ public:
 					SWITCH_AST_TYPE_FORMAT(OP_AND)
 					SWITCH_AST_TYPE_FORMAT(OP_OR)
 					SWITCH_AST_TYPE_FORMAT(OP_THEN)
+					SWITCH_AST_TYPE_FORMAT(OP_EMIT)
+					SWITCH_AST_TYPE_FORMAT(OP_ELSE)
 
 
 
@@ -222,6 +225,7 @@ public:
 				PRIM_CASE(and, AST_TYPE::OP_AND)
 				PRIM_CASE(or, AST_TYPE::OP_OR)
 				PRIM_CASE(then, AST_TYPE::OP_THEN)
+				
 
 
 				// Check if token is a string

@@ -40,7 +40,9 @@ enum AST_TYPE {
 	OP_AND,
 	OP_OR,
 	FUNCTION,
-	OP_THEN
+	OP_THEN,
+	OP_ELSE
+	
 
 };
 
@@ -150,5 +152,6 @@ void disp_error(ERRORS e, int line) {
 	 bool InFuncDef;
 	 bool InIfDef;
 	 bool IfTrue;
+	 bool IfSkipToThen;
 
 };

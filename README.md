@@ -9,7 +9,7 @@ TODO:
         - [ ] primitive math functions (WIP)
         - [ ] conditionals (WIP)
         - [ ] user defined functions (WIP)
-    - [ ] Toolchain
+   - [ ] Toolchain
         - [ ] Interpreter (WIP)
         - [ ] Native codegen
         - [ ] JIT

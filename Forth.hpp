@@ -40,6 +40,9 @@ public:
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
+
+		flags.IfTrue = false;
+		flags.InIfDef = false;
 		
 	}
 	Forth(bool repl) {
@@ -48,6 +51,8 @@ public:
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
+		flags.IfTrue = false;
+		flags.InIfDef = false;
 	}
 
 	~Forth() {
@@ -265,10 +270,9 @@ public:
 
 			AST_NODE curr = ast.at(i);
 
-			if((!flags.IfTrue && flags.InIfDef) || (!flags.InIfDef)) {
+			if(!(flags.IfTrue && flags.InIfDef)) {
 				//@CLEAN
 				//cout << "Exec. " << get<0>(curr) << "\n";
-
 				switch (get<0>(curr)) {
 
 				case AST_TYPE::LITERAL_NUMBER: {

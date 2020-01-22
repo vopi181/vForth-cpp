@@ -27,8 +27,7 @@ int main(int argc, char** argv)
 
 	}
 	else {
-
-		Forth f(true);
+  		Forth f(true);
 
 		if (true) {
 

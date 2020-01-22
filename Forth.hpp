@@ -274,7 +274,12 @@ public:
 
 			AST_NODE curr = ast.at(i);
 
-			if(!(flags.IfTrue && flags.InIfDef)) {
+			if(get<0>(curr) == AST_TYPE::OP_THEN)
+			{
+				flags.IfTrue = false;
+			}
+			
+			if(!(flags.IfTrue)) {
 				//@CLEAN
 				//cout << "Exec. " << get<0>(curr) << "\n";
 				switch (get<0>(curr)) {
@@ -690,6 +695,7 @@ public:
 					break;
 				}
 				case AST_TYPE::OP_IF: {
+					flags.InIfDef = true;
 					if (flags.InFuncDef) {
 						if (data_stack.size() >= 1) {
 							int v1 = stoi(data_stack.back());
@@ -709,7 +715,7 @@ public:
 					else {
 						disp_error(ERRORS::OPERATION_NEED_BLOCK, __LINE__);
 					}
-					flags.InIfDef = true;
+					
 					break;
 				}
 				case AST_TYPE::OP_THEN: {
@@ -749,6 +755,8 @@ public:
 					should_print = false;
 					break;
 				}
+
+				
 			}
 			/*if (this->std_repl) {
 				if (should_print) {

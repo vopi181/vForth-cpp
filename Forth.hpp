@@ -266,6 +266,7 @@ public:
 	}
 	void interp_AST(AST ast) {
 		bool should_print = true;
+		bool change_if_true_next_iter = false;
 		for (int i = 0; i < ast.size(); i++) {
 			should_print = true;
 
@@ -274,13 +275,19 @@ public:
 
 			AST_NODE curr = ast.at(i);
 
-			if(get<0>(curr) == AST_TYPE::OP_THEN)
+			if(change_if_true_next_iter)
 			{
 				flags.IfTrue = false;
 				flags.InIfDef = false;
+				change_if_true_next_iter = false;
 			}
 			
-			if(!(flags.IfTrue) && !flags.InIfDef) {
+			if(get<0>(curr) == AST_TYPE::OP_THEN)
+			{
+				change_if_true_next_iter = true;
+			}
+			
+			if((flags.InIfDef && flags.IfTrue) || (!flags.InIfDef && ! flags.IfTrue)) {
 				//@CLEAN
 				//cout << "Exec. " << get<0>(curr) << "\n";
 				switch (get<0>(curr)) {
@@ -697,13 +704,13 @@ public:
 				}
 				case AST_TYPE::OP_IF: {
 					flags.InIfDef = true;
-					cout << "if here\n";
+					
 
 					if (flags.InFuncDef) {
 						if (data_stack.size() >= 1) {
 							int v1 = stoi(data_stack.back());
 							data_stack.pop_back();
-							data_stack.pop_back();
+							
 
 
 							if (v1 > 0) {
@@ -723,36 +730,39 @@ public:
 					break;
 				}
 				case AST_TYPE::OP_THEN: {
-					cout << "THEN HERE\n";
-					if (flags.InFuncDef) {
-						if (data_stack.size() >= 1) {
-							
-							if (flags.IfTrue) {
-								cout << "Found true flags\n";
-								AST temp_ast;
+					
+					if (!change_if_true_next_iter) {
+						if (flags.InFuncDef) {
+							if (data_stack.size() >= 1) {
 
-								for (int i = ast.size() - 2; get<0>(ast.at(i)) != AST_TYPE::OP_IF; i--) {
-									temp_ast.push_back(ast.at(i));
+								if (flags.IfTrue) {
+									
+									AST temp_ast;
+
+
+									for (int i = ast.size() - 2; get<0>(ast.at(i)) != AST_TYPE::OP_IF; i--) {
+										temp_ast.push_back(ast.at(i));
+									}
+
+									this->interp_AST(temp_ast);
+
 								}
-								 
-								this->interp_AST(temp_ast);
+								else {
 
+								}
+								flags.InIfDef = false;
 							}
 							else {
-
+								disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
 							}
-							flags.InIfDef = false;
+
 						}
 						else {
-							disp_error(ERRORS::MISSING_STACK_OPERANDS, __LINE__);
+							disp_error(ERRORS::OPERATION_NEED_BLOCK, __LINE__);
 						}
+						flags.IfTrue = false;
 
-					} else {
-						disp_error(ERRORS::OPERATION_NEED_BLOCK, __LINE__);
 					}
-					flags.IfTrue = false;
-					
-
 					break;
 				}
 				default:

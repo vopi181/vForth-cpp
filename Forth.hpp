@@ -36,7 +36,7 @@ public:
 
 	Forth() {
 		this->std_repl = false;
-		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds","emit"};
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit", "then", "if", "dup", "rot", "pow" };
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
@@ -47,7 +47,7 @@ public:
 	}
 	Forth(bool repl) {
 		this->std_repl = repl;
-		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit"};
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit", "then", "if", "dup", "rot", "pow"};
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}

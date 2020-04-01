@@ -277,9 +277,10 @@ public:
 			if(get<0>(curr) == AST_TYPE::OP_THEN)
 			{
 				flags.IfTrue = false;
+				flags.InIfDef = false;
 			}
 			
-			if(!(flags.IfTrue)) {
+			if(!(flags.IfTrue) && !flags.InIfDef) {
 				//@CLEAN
 				//cout << "Exec. " << get<0>(curr) << "\n";
 				switch (get<0>(curr)) {
@@ -696,11 +697,14 @@ public:
 				}
 				case AST_TYPE::OP_IF: {
 					flags.InIfDef = true;
+					cout << "if here\n";
+
 					if (flags.InFuncDef) {
 						if (data_stack.size() >= 1) {
 							int v1 = stoi(data_stack.back());
 							data_stack.pop_back();
-							
+							data_stack.pop_back();
+
 
 							if (v1 > 0) {
 								flags.IfTrue = true;
@@ -719,6 +723,7 @@ public:
 					break;
 				}
 				case AST_TYPE::OP_THEN: {
+					cout << "THEN HERE\n";
 					if (flags.InFuncDef) {
 						if (data_stack.size() >= 1) {
 							

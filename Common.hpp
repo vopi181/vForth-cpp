@@ -100,8 +100,14 @@ int ascii_num_to_val(char c) {
 void* mem_str_to_ptr(const string& str) {
 	unsigned long ul;
 
-
+	#ifdef __APPLE__
+	sscanf(str.c_str(), "%lx", &ul);
+	#elif __unix__
+	sscanf(str.c_str(), "%lx", &ul);
+	#elif _WIN32
 	sscanf_s(str.c_str(), "%lx", &ul);
+	#endif
+	
 	return (void*)(uintptr_t)ul;
 }
 

@@ -2,5 +2,6 @@
 3
 MEME
 .
-emit 65
-emit 65
+cr
+65 emit
+66 emit

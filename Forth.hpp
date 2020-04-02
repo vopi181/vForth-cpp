@@ -36,7 +36,9 @@ public:
 
 	Forth() {
 		this->std_repl = false;
-		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit", "then", "if", "dup", "rot", "pow" };
+
+		// @TODO find way to make adding builtins not trash
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit", "then", "if", "dup", "rot", "pow", "cr"};
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
@@ -47,7 +49,7 @@ public:
 	}
 	Forth(bool repl) {
 		this->std_repl = repl;
-		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit", "then", "if", "dup", "rot", "pow"};
+		auto builts = { "pop", "df", "swap", "exit", "df", "df_def", "ds", "emit", "then", "if", "dup", "rot", "pow", "cr"};
 		for (auto str : builts) {
 			builtins.push_back(str);
 		}
@@ -225,6 +227,7 @@ public:
 				PRIM_CASE(and, AST_TYPE::OP_AND)
 				PRIM_CASE(or, AST_TYPE::OP_OR)
 				PRIM_CASE(then, AST_TYPE::OP_THEN)
+				PRIM_CASE(cr, AST_TYPE::OP_CR)
 				
 
 
